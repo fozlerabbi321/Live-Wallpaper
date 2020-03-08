@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/bg"
-    android:weightSum="2"
     tools:context=".SplashActivity">
 
-    <RelativeLayout
+  <!--  <RelativeLayout
         android:layout_weight=".8"
         android:layout_width="match_parent"
         android:layout_height="0dp">
@@ -23,7 +20,7 @@
             app:shape_arc_height="30dp"
             app:shape_arc_position="bottom"
             >
-            <!-- YOUR CONTENT -->
+            &lt;!&ndash; YOUR CONTENT &ndash;&gt;
             <ImageView
                 android:id="@+id/tv"
                 android:layout_width="wrap_content"
@@ -81,6 +78,10 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:id="@+id/countProgress" />
-    </RelativeLayout>
+    </RelativeLayout>-->
 
-</LinearLayout>
+    <com.flaviofaria.kenburnsview.KenBurnsView
+        android:src="@drawable/splashimg2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

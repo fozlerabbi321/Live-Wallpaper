@@ -28,6 +28,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.itbd.livewallpaper.Common.Common;
 import com.itbd.livewallpaper.adapter.MyFragmentAdapter;
 
@@ -73,7 +74,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 // Request Permission
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Common.PERMISSION_REQUEST_CODE);
+                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE}, Common.PERMISSION_REQUEST_CODE);
                 }
 
 
@@ -98,18 +99,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        menu_bottom = findViewById(R.id.navigation);
-        menu_bottom.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-                if(item.getItemId() == R.id.actions_uploaded)
-                {
-                    startActivity(new Intent(HomeActivity.this,UploadActivity.class));
-                }
-                return false;
-            }
-        });
         //****** set drawer layout
         drawer = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
@@ -119,14 +109,15 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         // check if not sign- in navigate sign-in page
-        if(FirebaseAuth.getInstance().getCurrentUser() == null) {
+        /*if(FirebaseAuth.getInstance().getCurrentUser() == null) {
         startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().build(),
                 Common.SIGN_IN_REQUEST_CODE);
         }else {
-            Snackbar.make(drawer,new StringBuilder("Welcome ").append(FirebaseAuth.getInstance().getCurrentUser().
-                    getEmail().toString()),Snackbar.LENGTH_SHORT).show();
-            }
+            Snackbar.make(drawer,new StringBuilder("Welcome").append(FirebaseAuth.getInstance().getCurrentUser().
+                    getEmail().toString()),Snackbar.LENGTH_LONG).show();
+            }*/
 
         // Request Permission
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE )
@@ -144,6 +135,20 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         tabs.setupWithViewPager(viewPager);
 
         loadUserInformation();
+
+        menu_bottom = findViewById(R.id.navigation);
+        menu_bottom.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
+                if(item.getItemId() == R.id.actions_uploaded)
+                {
+                    startActivity(new Intent(HomeActivity.this,UploadActivity.class));
+                }
+                return false;
+            }
+        });
+
     }
 
     private void loadUserInformation()

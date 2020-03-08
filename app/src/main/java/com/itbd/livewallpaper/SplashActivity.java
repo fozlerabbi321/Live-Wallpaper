@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -22,7 +23,7 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        process = findViewById(R.id.progressbar);
+        /*process = findViewById(R.id.progressbar);
         countProgress = findViewById(R.id.countProgress);
 
         process.setProgress(0);
@@ -51,6 +52,13 @@ public class SplashActivity extends AppCompatActivity {
                     finish();
                 }
             }
-        }, 0, period);
+        }, 0, period);*/
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                startActivity(new Intent(SplashActivity.this,HomeActivity.class));
+                finish();
+            }
+        },5000);
     }
 }

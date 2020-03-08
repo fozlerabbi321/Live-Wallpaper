@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DatabaseReference;
@@ -57,7 +58,15 @@ public class CetagoryFragment extends Fragment {
         adapter = new FirebaseRecyclerAdapter<CategoryItem, CategoryViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull final CategoryViewHolder holder, int position, @NonNull final CategoryItem model) {
-                Picasso.with(getActivity())
+
+                //image set glide library
+                Glide.with(getActivity())
+                        .load(model.getImageLink())
+                        .override(Common.WIDTH,Common.HEIGHT)
+                        .centerCrop()
+                        .into(holder.background_image);
+                //image set picasso library
+                /*  Picasso.with(getActivity())
                         .load(model.getImageLink())
                         .networkPolicy(NetworkPolicy.OFFLINE)
                         .into(holder.background_image, new Callback() {
@@ -83,7 +92,7 @@ public class CetagoryFragment extends Fragment {
                                             }
                                         });
                             }
-                        });
+                        });*/
 
                 holder.category_name.setText(model.getName());
 

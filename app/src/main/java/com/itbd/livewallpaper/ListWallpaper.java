@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.FirebaseDatabase;
@@ -61,6 +62,7 @@ public class ListWallpaper extends AppCompatActivity {
 
         loadBackgroundList();
 
+
     }
 
     private void loadBackgroundList()
@@ -75,7 +77,16 @@ public class ListWallpaper extends AppCompatActivity {
             @Override
             protected void onBindViewHolder(@NonNull final ListWallpaperViewHolder holder, int i, @NonNull final WallpaperItem model) {
 
-                Picasso.with(getBaseContext())
+                // gif img
+                Glide.with(ListWallpaper.this)
+                        .load(model.getImageLink())
+                        .override(Common.WIDTH,Common.HEIGHT)
+                        .centerCrop()
+                        .into(holder.wallpaper);
+              //  holder.wallpaper.setImageResource(R.drawable.bg);
+
+                //image jpeg and png
+ /*               Picasso.with(getBaseContext())
                         .load(model.getImageLink())
                         .networkPolicy(NetworkPolicy.OFFLINE)
                         .into(holder.wallpaper, new Callback() {
@@ -100,7 +111,7 @@ public class ListWallpaper extends AppCompatActivity {
                                             }
                                         });
                             }
-                        });
+                        });*/
 
                 holder.setItemClickListener(new ItemClickListener() {
                     @Override

@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.itbd.livewallpaper.Common.Common;
 import com.itbd.livewallpaper.Database.Recents;
 import com.itbd.livewallpaper.Interface.ItemClickListener;
@@ -45,7 +46,9 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<ListWallpaperViewHol
 
     @Override
     public void onBindViewHolder(@NonNull final ListWallpaperViewHolder holder, final int position) {
-        Picasso.with(context)
+
+        //picasso
+        /*    Picasso.with(context)
                 .load(recents.get(position).getImageLink())
                 .networkPolicy(NetworkPolicy.OFFLINE)
                 .into(holder.wallpaper, new Callback() {
@@ -70,7 +73,14 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<ListWallpaperViewHol
                                     }
                                 });
                     }
-                });
+                });*/
+
+        //glide
+        Glide.with(context)
+                .load(recents.get(position).getImageLink())
+                .override(Common.WIDTH,Common.HEIGHT)
+                .centerCrop()
+                .into(holder.wallpaper);
 
         holder.setItemClickListener(      new ItemClickListener() {
             @Override

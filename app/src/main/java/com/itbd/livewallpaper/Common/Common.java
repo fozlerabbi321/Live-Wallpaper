@@ -7,6 +7,8 @@ public class Common {
     public static final int PERMISSION_REQUEST_CODE = 100;
     public static final int SIGN_IN_REQUEST_CODE = 1001;
     public static final int PICK_IMAGE_REQUEST = 1002;
+    public static final int WIDTH = 250;
+    public static final int HEIGHT = 250;
     public static String  CATEGORY_ID_SELECTED;
     public static String STR_WALLPAPER = "Backgrounds";
     public static String  CATEGORY_SELECTED;

@@ -1,6 +1,7 @@
 package com.itbd.livewallpaper;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -10,17 +11,37 @@ import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.WallpaperManager;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Movie;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.SystemClock;
+import android.service.wallpaper.WallpaperService;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.SurfaceHolder;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.Request;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.SizeReadyCallback;
+import com.bumptech.glide.request.transition.Transition;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -48,10 +69,15 @@ import com.itbd.livewallpaper.Model.WallpaperItem;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.LogRecord;
 
 import dmax.dialog.SpotsDialog;
 import io.reactivex.Observable;
@@ -83,8 +109,9 @@ public class ViewWallpaper extends AppCompatActivity {
     //Facebook
     CallbackManager callbackManager;
     ShareDialog shareDialog;
+    AlertDialog dialog;
 
-    // set wallpaper
+    // set wallpaper picasso
     private Target target = new Target() {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
@@ -109,6 +136,7 @@ public class ViewWallpaper extends AppCompatActivity {
         }
     };
 
+//fb share
     private Target facebookConvertBitmap = new Target() {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
@@ -147,7 +175,7 @@ public class ViewWallpaper extends AppCompatActivity {
             {
                 if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 {
-                    AlertDialog dialog = new SpotsDialog(ViewWallpaper.this);
+                    AlertDialog dialog = new SpotsDialog.Builder().setContext(ViewWallpaper.this).build();
                     dialog.show();
                     dialog.setMessage("Please Waiting....");
 
@@ -178,6 +206,8 @@ public class ViewWallpaper extends AppCompatActivity {
         callbackManager = CallbackManager.Factory.create();
         shareDialog = new ShareDialog(this);
 
+        String  url = (Common.select_background.getImageLink());
+
 
         // Init RoomDatabase
         compositeDisposable = new CompositeDisposable();
@@ -193,13 +223,23 @@ public class ViewWallpaper extends AppCompatActivity {
         collapsingToolbarLayout.setTitle(Common.CATEGORY_SELECTED);
         imageView = findViewById(R.id.imageThumb);
 
-        Picasso.with(this)
+        //img
+        /*Picasso.with(this)
                 .load(Common.select_background.getImageLink())
+                .into(imageView);
+*/
+        // gif img
+        Glide.with(ViewWallpaper.this)
+                .load(Common.select_background.getImageLink())
+                .override(350, 350)
+                .centerCrop()
+                .placeholder(R.drawable.ic_load)
                 .into(imageView);
 
         mainFloationg = findViewById(R.id.menu);
         fbShare = findViewById(R.id.menu_share);
-        fbShare.setOnClickListener(new View.OnClickListener() {
+        fbShare.setOnClickListener(new View.OnClickListener()
+        {
             @Override
             public void onClick(View v) {
 
@@ -223,9 +263,38 @@ public class ViewWallpaper extends AppCompatActivity {
 
                 //we will fetch photo from link and to bitmap
 
-                Picasso.with(getBaseContext())
+                //picasso
+               /* Picasso.with(getBaseContext())
                         .load(Common.select_background.getImageLink())
-                        .into(facebookConvertBitmap);
+                        .into(facebookConvertBitmap);*/
+                //glide
+                Glide.with(ViewWallpaper.this)
+                        .asBitmap()
+                        .load(Common.select_background.getImageLink())
+                        .into(new CustomTarget<Bitmap>() {
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap bitmap, @Nullable Transition<? super Bitmap> transition) {
+
+
+                                SharePhoto sharePhoto = new SharePhoto.Builder()
+                                        .setBitmap(bitmap)
+                                        .build();
+
+                                if(ShareDialog.canShow(SharePhotoContent.class))
+                                {
+                                    SharePhotoContent content = new SharePhotoContent.Builder()
+                                            .addPhoto(sharePhoto)
+                                            .build();
+                                    shareDialog.show(content);
+                                }
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                            }
+                        });
+
             }
         });
 
@@ -235,12 +304,40 @@ public class ViewWallpaper extends AppCompatActivity {
 
         // save wallpaper btn
         floatingActionButton = findViewById(R.id.fabWallpaper);
+
+
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v)
+            {
+              /*  //picasso
                 Picasso.with(ViewWallpaper.this)
                         .load(Common.select_background.getImageLink())
                         .into(target);
+*/
+              //gif
+                Glide.with(ViewWallpaper.this)
+                        .asBitmap()
+                        .load(Common.select_background.getImageLink())
+                        .into(new CustomTarget<Bitmap>() {
+                            @Override
+                            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                WallpaperManager wallpaperManager = WallpaperManager.getInstance(ViewWallpaper.this);
+                                try {
+                                    wallpaperManager.setBitmap(resource);
+                                    Snackbar.make(rootLayout,"Wallpaper was set",Snackbar.LENGTH_SHORT).show();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+
+                            @Override
+                            public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                            }
+                        });
+
             }
         });
 
@@ -253,19 +350,37 @@ public class ViewWallpaper extends AppCompatActivity {
                 //check permission
                 if(ActivityCompat.checkSelfPermission(ViewWallpaper.this, Manifest.permission.WRITE_EXTERNAL_STORAGE )
                         != PackageManager.PERMISSION_GRANTED){
-                    requestPermissions(new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, Common.PERMISSION_REQUEST_CODE);
+                    requestPermissions(new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE}, Common.PERMISSION_REQUEST_CODE);
                 }
                 else{
-                    AlertDialog dialog = new SpotsDialog(ViewWallpaper.this);
+                    dialog = new SpotsDialog.Builder().setContext(ViewWallpaper.this).build();
                     dialog.show();
                     dialog.setMessage("Please Waiting....");
 
-                    String fileName = UUID.randomUUID().toString()+"png";
+                    //picasso
+                   /* String fileName = UUID.randomUUID().toString()+"png";
                     Picasso.with(getBaseContext())
                             .load(Common.select_background.getImageLink())
                             .into(new SaveImageHelper(getBaseContext(),dialog,
                                     getApplicationContext().getContentResolver(),
-                                    fileName,"ITBD Live Wallpaper Image"));
+                                    fileName,"ITBD Live Wallpaper Image"));*/
+
+                   //glide
+                    Glide.with(ViewWallpaper.this)
+                            .asBitmap()
+                            .load(Common.select_background.getImageLink())
+                            .override(300,600)
+                            .into(new CustomTarget<Bitmap>() {
+                                @Override
+                                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                    saveBitmap(resource);
+                                }
+
+                                @Override
+                                public void onLoadCleared(@Nullable Drawable placeholder) {
+
+                                }
+                            });
 
                 }
 
@@ -274,6 +389,44 @@ public class ViewWallpaper extends AppCompatActivity {
 
         //View Count
         increaseViewCount();
+
+    }
+
+    private void saveBitmap(Bitmap bitmap)
+    {
+        //String fileName = UUID.randomUUID()+".png";
+        String  url = (Common.select_background.getImageLink());
+        String fileName= url.substring(url.lastIndexOf('/'), url.length());
+
+        String path = Environment.getExternalStorageDirectory().toString();
+        File folder = new File(path + "/" + getString(R.string.app_name));
+        folder.mkdirs();
+        File file = new File(folder,fileName+".png");
+
+        if(file.exists())
+        {
+            Toast.makeText(this, "Already Downloaded", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        }else {
+            if(file.exists())
+                file.delete();
+            try {
+                FileOutputStream outputStream = new FileOutputStream(file);
+                bitmap.compress(Bitmap.CompressFormat.PNG,100,outputStream);
+                outputStream.flush();
+                outputStream.close();
+
+                //this line send picture to gallery
+                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
+                Snackbar.make(rootLayout,"Download successfully",Snackbar.LENGTH_SHORT).show();
+                dialog.dismiss();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
 
     }
 
@@ -379,7 +532,7 @@ public class ViewWallpaper extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        Picasso.with(this).cancelRequest(target);
+        //Picasso.with(this).cancelRequest(target);
         compositeDisposable.clear();
         super.onDestroy();
     }
@@ -390,4 +543,5 @@ public class ViewWallpaper extends AppCompatActivity {
             finish();
         return super.onOptionsItemSelected(item);
     }
+
 }

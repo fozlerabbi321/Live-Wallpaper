@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DatabaseReference;
@@ -60,7 +61,8 @@ public class TrendingFragment extends Fragment {
             @Override
             protected void onBindViewHolder(@NonNull final ListWallpaperViewHolder holder, int position, @NonNull final WallpaperItem model) {
 
-                Picasso.with(getActivity())
+                //image set picasso library
+               /* Picasso.with(getActivity())
                         .load(model.getImageLink())
                         .networkPolicy(NetworkPolicy.OFFLINE)
                         .into(holder.wallpaper, new Callback() {
@@ -86,6 +88,13 @@ public class TrendingFragment extends Fragment {
                                         });
                             }
                         });
+*/
+                //glide
+                Glide.with(getActivity())
+                        .load(model.getImageLink())
+                        .override(Common.WIDTH,Common.HEIGHT)
+                        .centerCrop()
+                        .into(holder.wallpaper);
 
                 holder.setItemClickListener(new ItemClickListener() {
                     @Override
